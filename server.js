@@ -4,6 +4,9 @@ const app = express();
 // 폴더 등록
 app.use(express.static(__dirname + "/public"));
 
+// ejs 세팅
+app.set("view engine", "ejs");
+
 const { MongoClient } = require("mongodb");
 
 let db;
@@ -36,6 +39,10 @@ app.get("/about", (req, res) => {
 
 app.get("/list", async (req, res) => {
   let result = await db.collection("post").find().toArray();
-  console.log(result);
-  res.send("DB에 있던 게시물");
+  res.render("list.ejs", { posts: result });
+});
+
+app.get("/time", (req, res) => {
+  let time = new Date();
+  res.render("time.ejs", { time: time });
 });
