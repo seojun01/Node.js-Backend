@@ -3,15 +3,15 @@ const app = express();
 
 // 폴더 등록
 app.use(express.static(__dirname + "/public"));
-
 // ejs 세팅
 app.set("view engine", "ejs");
 
-const { MongoClient } = require("mongodb");
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 let db;
 const url = `mongodb+srv://admin:${encodeURIComponent(
-  "Tjwns?0324"
+  ""
 )}@cluster0.stp1mtt.mongodb.net/?appName=Cluster0`; // 특수문자 들어간 비밀번호 인코딩
 new MongoClient(url)
   .connect()
@@ -32,14 +32,35 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
 });
 
-app.get("/about", (req, res) => {
-  db.collection("post").insertOne({ title: "testData" });
-  res.sendFile(__dirname + "/about.html");
-});
-
 app.get("/list", async (req, res) => {
   let result = await db.collection("post").find().toArray();
   res.render("list.ejs", { posts: result });
+});
+
+app.get("/write", (req, res) => {
+  res.render("write.ejs");
+});
+
+app.post("/add", async (req, res) => {
+  try {
+    if (req.body.title == "") {
+      res.redirect("/write");
+    } else {
+      await db.collection("post").insertOne({
+        title: req.body.title,
+        content: req.body.content,
+      });
+      res.redirect("/list");
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send("Error");
+  }
+});
+
+app.get("/about", (req, res) => {
+  db.collection("post").insertOne({ title: "testData" });
+  res.sendFile(__dirname + "/about.html");
 });
 
 app.get("/time", (req, res) => {
