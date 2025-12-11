@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+const { MongoClient, ObjectId } = require("mongodb");
 
 // 폴더 등록
 app.use(express.static(__dirname + "/public"));
@@ -34,6 +35,7 @@ app.get("/", (req, res) => {
 
 app.get("/list", async (req, res) => {
   let result = await db.collection("post").find().toArray();
+  //console.log(result[0]._id);
   res.render("list.ejs", { posts: result });
 });
 
@@ -66,4 +68,19 @@ app.get("/about", (req, res) => {
 app.get("/time", (req, res) => {
   let time = new Date();
   res.render("time.ejs", { time: time });
+});
+
+app.get("/detail/:id", async (req, res) => {
+  try {
+    let result = await db
+      .collection("post")
+      .findOne({ _id: new ObjectId(req.params.id) });
+    if (result == null) {
+      res.status(400).send("존재하지 않는 글");
+    } else {
+      res.render("detail.ejs", { result: result });
+    }
+  } catch {
+    res.send("Error");
+  }
 });
